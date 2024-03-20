@@ -30,9 +30,10 @@
 #             return redirect(url_for('upload_file', message='File uploaded successfully!'))
 #     return render_template('index.html')
 
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify, render_template
 from pymongo import MongoClient
 from gridfs import GridFS
+import datetime
 
 client = MongoClient('mongodb+srv://DeepCytes:DeepCytes@cluster0.xq93k2r.mongodb.net/')
 db = client['Cluster0']
@@ -48,8 +49,24 @@ def upload_file():
     if request.method == 'POST':
         file = request.files['file']
         filename = file.filename
-        fs.put(file.stream, filename=filename, content_type=file.content_type)
-        return 'File uploaded successfully!'
+        file_format = filename.split('.')[-1]  # Extract file format from filename
+        file_size = len(file.read())  # Calculate file size
+        file.seek(0)  # Reset file cursor
+        file_type = file.content_type  # Get file type
+        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Get current date and timestamp
+        
+        metadata = {
+            'filename': filename,
+            'file_size': file_size,
+            'file_type': file_type,
+            'upload_datetime': current_datetime
+        }
+        
+        fs.put(file.stream, filename=filename, content_type=file_type, format=file_format, metadata=metadata)
+        
+        # Return JSON response with metadata
+        return jsonify(metadata)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
