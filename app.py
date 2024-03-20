@@ -2,9 +2,13 @@ from flask import Flask, request, render_template, jsonify
 from pymongo import MongoClient
 from gridfs import GridFS
 from datetime import datetime
+from dotenv import load_dotenv
+from os import environ
 
 app = Flask(__name__)
-client = MongoClient('mongodb+srv://DeepCytes:DeepCytes@cluster0.xq93k2r.mongodb.net/')
+mongo = environ.get('MONGO')
+# client = MongoClient('Mongo_url')
+client = MongoClient(mongo)
 db = client['Cluster0']
 fs = GridFS(db)
 
